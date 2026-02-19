@@ -433,7 +433,7 @@ Do not use patient-friendly language—this is for clinical decision makers.`;
         }
       },
       CYP2C9: {
-        enzyme_function: "CYP2C914 is a hepatic cytochrome P450 enzyme that catalyzes hydroxylation of substrates, particularly important for warfarin S-enantiomer metabolism and NSAID clearance.",
+        enzyme_function: "CYP2C9 is a hepatic cytochrome P450 enzyme that catalyzes hydroxylation of substrates, particularly important for warfarin S-enantiomer metabolism and NSAID clearance.",
         pathways: {
           WARFARIN: {
             active_vs_inactive: "S-warfarin is the pharmacologically active enantiomer (4x more potent than R-warfarin) that inhibits VKORC1 to reduce vitamin K recycling.",

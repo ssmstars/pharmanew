@@ -17,10 +17,10 @@ export const AnalysisResponseSchema = z.object({
   patient_id: z.string(),
   drug: z.string().optional(), 
   drugs: z.array(z.string()).optional(),
-  analysis_type: z.enum(['single_drug', 'polypharmacy']),
+  analysis_type: z.enum(['single_drug', 'polypharmacy']).optional(), // Optional for hackathon strict mode
   timestamp: z.string(),
   risk_assessment: z.object({
-    risk_label: z.enum(['Safe', 'Adjust Dosage', 'Toxic', 'Ineffective', 'Unknown']),
+    risk_label: z.enum(['Safe', 'Adjust Dosage', 'Toxic', 'Contraindicated', 'Use with Caution']),
     confidence_score: z.number().min(0).max(1),
     severity: z.enum(['none', 'low', 'moderate', 'high', 'critical'])
   }),
@@ -39,14 +39,18 @@ export const AnalysisResponseSchema = z.object({
     primary_gene: z.string(),
     diplotype: z.string(),
     phenotype: z.enum(['PM', 'IM', 'NM', 'RM', 'URM', 'Unknown']),
+    activity_score: z.number().optional(),
+    activity_score_interpretation: z.string().optional(),
     detected_variants: z.array(z.object({
-      rsid: z.string().optional(),
+      rsid: z.string(),
       chromosome: z.string(),
       position: z.number(),
       ref: z.string(),
       alt: z.string(),
-      gene: z.string().optional(),
-      starAllele: z.string().optional()
+      gene: z.string(),
+      starAllele: z.string(),
+      genotype: z.string(),
+      functionImpact: z.string()
     }))
   }),
   clinical_recommendation: z.object({
@@ -54,19 +58,60 @@ export const AnalysisResponseSchema = z.object({
     monitoring_requirements: z.array(z.string()).optional(),
     alternative_drugs: z.array(z.string()).optional(),
     cpic_level: z.string().optional(),
-    implementation_status: z.string().optional()
+    implementation_status: z.string().optional(),
+    guideline_source: z.string().optional(),
+    phasing_method: z.string().optional()
   }),
   llm_generated_explanation: z.object({
     summary: z.string(),
-    mechanism: z.string(), 
-    variant_interpretation: z.string()
+    mechanism: z.string().optional(), 
+    variant_interpretation: z.string().optional()
   }),
   quality_metrics: z.object({
     vcf_parsing_success: z.boolean(),
-    variants_detected: z.number(),
-    llm_confidence: z.number().min(0).max(1)
+    variants_detected: z.number().optional(),
+    llm_confidence: z.number().min(0).max(1).optional()
   })
 });
+
+// Hackathon strict schema (no additionalProperties)
+export const HackathonStrictResponseSchema = z.object({
+  patient_id: z.string().regex(/^PATIENT_[A-Za-z0-9_-]+$/),
+  drug: z.string().min(1),
+  timestamp: z.string().datetime(),
+  risk_assessment: z.object({
+    risk_label: z.enum(['Safe', 'Adjust Dosage', 'Toxic', 'Contraindicated', 'Use with Caution']),
+    confidence_score: z.number().min(0).max(1),
+    severity: z.enum(['none', 'low', 'moderate', 'high', 'critical'])
+  }).strict(),
+  pharmacogenomic_profile: z.object({
+    primary_gene: z.string().min(1),
+    diplotype: z.string().regex(/^\*[A-Za-z0-9]+\/\*[A-Za-z0-9]+$/),
+    phenotype: z.enum(['PM', 'IM', 'NM', 'RM', 'URM', 'Unknown']),
+    detected_variants: z.array(z.object({
+      rsid: z.string().regex(/^rs[0-9]+$/),
+      chromosome: z.string().regex(/^chr([0-9]+|X|Y|MT)$/),
+      position: z.number().int().min(1),
+      ref: z.string().regex(/^[ACGT]+$/),
+      alt: z.string().regex(/^[ACGT]+$/),
+      gene: z.string(),
+      starAllele: z.string().regex(/^\*[A-Za-z0-9]+$/),
+      genotype: z.string().regex(/^(0|1|2)[\/|](0|1|2)$/),
+      functionImpact: z.string()
+    }).strict()).min(1)
+  }).strict(),
+  clinical_recommendation: z.object({}).passthrough(), // additionalProperties: true
+  llm_generated_explanation: z.object({
+    summary: z.string().min(1),
+    mechanism: z.string().optional(),
+    variant_interpretation: z.string().optional()
+  }).strict(),
+  quality_metrics: z.object({
+    vcf_parsing_success: z.boolean(),
+    variants_detected: z.number().int().min(0).optional(),
+    llm_confidence: z.number().min(0).max(1).optional()
+  }).strict()
+}).strict();
 
 // Type exports
 export type AnalysisRequest = z.infer<typeof AnalysisRequestSchema>;

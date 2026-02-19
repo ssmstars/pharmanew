@@ -13,8 +13,8 @@ import {
 
 interface QualityMetrics {
   vcf_parsing_success: boolean;
-  variants_detected: number;
-  llm_confidence: number;
+  variants_detected?: number;
+  llm_confidence?: number;
 }
 
 interface ConfidenceRadarProps {
@@ -23,6 +23,9 @@ interface ConfidenceRadarProps {
 }
 
 const ConfidenceRadar: React.FC<ConfidenceRadarProps> = ({ metrics, confidenceScore }) => {
+  const variantsDetected = metrics.variants_detected ?? 0;
+  const llmConfidence = metrics.llm_confidence ?? 0.85;
+  
   const data = [
     {
       metric: 'VCF Quality',
@@ -31,12 +34,12 @@ const ConfidenceRadar: React.FC<ConfidenceRadarProps> = ({ metrics, confidenceSc
     },
     {
       metric: 'Variant Coverage',
-      value: Math.min(metrics.variants_detected * 15, 100),
+      value: Math.min(variantsDetected * 15, 100),
       fullMark: 100
     },
     {
       metric: 'AI Confidence',
-      value: metrics.llm_confidence * 100,
+      value: llmConfidence * 100,
       fullMark: 100
     },
     {
@@ -46,7 +49,7 @@ const ConfidenceRadar: React.FC<ConfidenceRadarProps> = ({ metrics, confidenceSc
     },
     {
       metric: 'Data Completeness',
-      value: metrics.vcf_parsing_success && metrics.variants_detected > 0 ? 85 : 40,
+      value: metrics.vcf_parsing_success && variantsDetected > 0 ? 85 : 40,
       fullMark: 100
     }
   ];

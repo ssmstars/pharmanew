@@ -182,6 +182,17 @@ export class VCFParser {
       info: this.parseInfoField(fields[columnMapping['INFO']])
     };
 
+    // Parse FORMAT and sample columns if present
+    if (columnMapping['FORMAT'] !== undefined && fields.length > columnMapping['FORMAT']) {
+      variant.format = fields[columnMapping['FORMAT']];
+      
+      // Collect all sample columns (everything after FORMAT)
+      const sampleStartIndex = columnMapping['FORMAT'] + 1;
+      if (fields.length > sampleStartIndex) {
+        variant.samples = fields.slice(sampleStartIndex);
+      }
+    }
+
     // Extract pharmacogenetic fields from INFO
     if (variant.info.GENE) {
       variant.gene = variant.info.GENE;

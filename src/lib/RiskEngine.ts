@@ -56,9 +56,9 @@ const DRUG_RISK_RULES: Record<SupportedDrug, Record<string, RiskAssessment & { c
       confidence_score: 0.95,
       severity: "HIGH",
       clinical: {
-        dosing_guidance: "Avoid codeine. Use alternative analgesic.",
-        monitoring_requirements: ["Pain assessment", "Alternative pain management"],
-        alternative_drugs: ["Morphine", "Oxycodone", "Hydromorphone"],
+        dosing_guidance: "Avoid codeine due to lack of efficacy. CYP2D6 poor metabolizers cannot convert codeine to its active metabolite morphine. Consider morphine, oxycodone, or non-opioid alternatives.",
+        monitoring_requirements: ["Pain assessment", "Alternative pain management evaluation"],
+        alternative_drugs: ["Morphine", "Oxycodone", "Hydromorphone", "Non-opioid analgesics (NSAIDs, acetaminophen)"],
         cpic_level: "A",
         implementation_status: "Required"
       }
@@ -68,10 +68,10 @@ const DRUG_RISK_RULES: Record<SupportedDrug, Record<string, RiskAssessment & { c
       confidence_score: 0.88,
       severity: "MODERATE", 
       clinical: {
-        dosing_guidance: "Use reduced dose (50-75% of standard) and monitor closely.",
-        monitoring_requirements: ["Pain assessment", "Respiratory depression monitoring"],
-        alternative_drugs: ["Morphine", "Oxycodone"],
-        cpic_level: "B",
+        dosing_guidance: "Consider alternative analgesic not metabolized by CYP2D6. If codeine is used, be alert to insufficient pain relief due to reduced morphine formation. Monitor closely for lack of efficacy.",
+        monitoring_requirements: ["Pain assessment for adequate response", "Consider alternative if pain control inadequate"],
+        alternative_drugs: ["Morphine", "Oxycodone", "Non-opioid analgesics"],
+        cpic_level: "A",
         implementation_status: "Recommended"
       }
     },
@@ -80,9 +80,9 @@ const DRUG_RISK_RULES: Record<SupportedDrug, Record<string, RiskAssessment & { c
       confidence_score: 0.93,
       severity: "LOW",
       clinical: {
-        dosing_guidance: "Use standard dosing.",
-        monitoring_requirements: ["Standard pain assessment"],
-        cpic_level: "B",
+        dosing_guidance: "Use label-recommended age or weight-specific dosing.",
+        monitoring_requirements: ["Standard pain assessment", "Routine opioid monitoring"],
+        cpic_level: "A",
         implementation_status: "Optional"
       }
     },
@@ -91,9 +91,9 @@ const DRUG_RISK_RULES: Record<SupportedDrug, Record<string, RiskAssessment & { c
       confidence_score: 0.91,
       severity: "CRITICAL",
       clinical: {
-        dosing_guidance: "Avoid codeine. Risk of respiratory depression.",
-        monitoring_requirements: ["Respiratory monitoring", "CNS depression assessment"],
-        alternative_drugs: ["Morphine", "Oxycodone", "Hydromorphone"],
+        dosing_guidance: "Avoid codeine due to risk of life-threatening toxicity. CYP2D6 ultrarapid metabolizers convert codeine to morphine too rapidly, causing respiratory depression and CNS toxicity. Use alternative analgesics.",
+        monitoring_requirements: ["If codeine inadvertently given: respiratory monitoring", "CNS depression assessment", "Oxygen saturation monitoring"],
+        alternative_drugs: ["Morphine (with appropriate dose adjustment)", "Non-opioid analgesics (NSAIDs, acetaminophen)"],
         cpic_level: "A", 
         implementation_status: "Required"
       }
@@ -118,10 +118,10 @@ const DRUG_RISK_RULES: Record<SupportedDrug, Record<string, RiskAssessment & { c
       confidence_score: 0.87,
       severity: "MODERATE",
       clinical: {
-        dosing_guidance: "Consider alternative antiplatelet or increased dose (150mg daily).",
+        dosing_guidance: "Consider alternative antiplatelet (prasugrel, ticagrelor) or increased dose (150mg daily).",
         monitoring_requirements: ["Platelet function testing", "Bleeding assessment"],
         alternative_drugs: ["Prasugrel", "Ticagrelor"],
-        cpic_level: "B",
+        cpic_level: "A",
         implementation_status: "Recommended" 
       }
     },
@@ -132,7 +132,7 @@ const DRUG_RISK_RULES: Record<SupportedDrug, Record<string, RiskAssessment & { c
       clinical: {
         dosing_guidance: "Use standard dosing (75mg daily).",
         monitoring_requirements: ["Standard cardiac monitoring"],
-        cpic_level: "B",
+        cpic_level: "A",
         implementation_status: "Optional"
       }
     },
@@ -143,7 +143,7 @@ const DRUG_RISK_RULES: Record<SupportedDrug, Record<string, RiskAssessment & { c
       clinical: {
         dosing_guidance: "Use standard dosing. Enhanced response expected.",
         monitoring_requirements: ["Bleeding assessment", "Standard cardiac monitoring"],
-        cpic_level: "C",
+        cpic_level: "A",
         implementation_status: "Optional"
       }
     }
