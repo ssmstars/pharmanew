@@ -1,0 +1,44 @@
+{
+  "name": "pharmaguard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@headlessui/react": "^2.1.8",
+    "autoprefixer": "^10.4.24",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.436.0",
+    "next": "14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "@types/react": "^18.3.8",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.15",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.2"
+  },
+  "description": "PharmaGuard - Pharmacogenomic Risk Prediction System",
+  "keywords": [
+    "pharmacogenomics",
+    "genomics",
+    "healthcare",
+    "AI",
+    "precision-medicine"
+  ],
+  "author": "",
+  "license": "MIT"
+}
