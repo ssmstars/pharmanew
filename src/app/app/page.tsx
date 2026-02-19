@@ -33,6 +33,7 @@ export default function AnalysisPage() {
         vcf_content: vcfContent,
         analysis_type: analysisMode === 'single' ? 'single_drug' : 'polypharmacy',
         patient_id: `PATIENT_${Date.now()}`,
+        schema_mode: 'extended',
         ...(analysisMode === 'single'
           ? { drug: selectedDrugs[0] }
           : { drugs: selectedDrugs }

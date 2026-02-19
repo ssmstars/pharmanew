@@ -3,6 +3,14 @@
 import React, { useState } from 'react';
 import { AnalysisResponse } from '@/lib/types';
 import { ChevronDown, ChevronUp, Copy, Download, RotateCcw, AlertTriangle, CheckCircle } from 'lucide-react';
+import { 
+  RiskGauge, 
+  ConfidenceRadar, 
+  DrugInteractionChart, 
+  PhenotypeChart, 
+  MetabolismPathway,
+  MedicalIndicators 
+} from './charts';
 
 interface ResultsDisplayProps {
   result: AnalysisResponse;
@@ -181,6 +189,20 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, onReset }) => {
         </div>
       </div>
 
+      {/* Medical Indicators Dashboard */}
+      <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-6 border border-slate-200">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+          <span className="text-xl">📊</span> Clinical Dashboard
+        </h3>
+        <MedicalIndicators
+          riskLabel={result.risk_assessment.risk_label}
+          severity={result.risk_assessment.severity}
+          confidence={result.risk_assessment.confidence_score}
+          variantsDetected={result.quality_metrics.variants_detected}
+          phenotype={result.pharmacogenomic_profile.phenotype}
+        />
+      </div>
+
       {/* Polypharmacy Alert - Show only for multi-drug analysis */}
       {result.polypharmacy_alert && result.polypharmacy_alert.polypharmacy_flag && (
         <div className="premium-card">
@@ -262,6 +284,15 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, onReset }) => {
                 </div>
               </div>
             )}
+
+            {/* Drug Interaction Severity Chart */}
+            <div className="bg-white rounded-lg border border-slate-200 p-4">
+              <h4 className="text-sm font-semibold text-slate-800 mb-4">Drug Interaction Severity</h4>
+              <DrugInteractionChart 
+                interactions={result.polypharmacy_alert.interacting_pairs}
+                drugs={result.drugs || []}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -350,6 +381,60 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, onReset }) => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Visual Analytics Section */}
+        <div className="p-6 border-b border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
+            <span>📈</span> Visual Analytics
+          </h3>
+          
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Risk Gauge */}
+            <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <RiskGauge
+                riskLabel={result.risk_assessment.risk_label}
+                confidenceScore={result.risk_assessment.confidence_score}
+                severity={result.risk_assessment.severity}
+              />
+            </div>
+
+            {/* Phenotype Distribution */}
+            <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <h4 className="text-sm font-medium text-slate-500 mb-3 flex items-center gap-2">
+                <span className="text-base">🧬</span> Phenotype Distribution
+              </h4>
+              <PhenotypeChart
+                currentPhenotype={result.pharmacogenomic_profile.phenotype}
+              />
+            </div>
+
+            {/* Confidence Radar */}
+            <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow md:col-span-2 lg:col-span-1">
+              <h4 className="text-sm font-medium text-slate-500 mb-3 flex items-center gap-2">
+                <span className="text-base">📊</span> Quality Metrics
+              </h4>
+              <ConfidenceRadar
+                metrics={result.quality_metrics}
+                confidenceScore={result.risk_assessment.confidence_score}
+              />
+            </div>
+          </div>
+
+          {/* Metabolism Pathway - Full Width */}
+          {result.analysis_type === 'single_drug' && result.drug && (
+            <div className="mt-6">
+              <h4 className="text-sm font-medium text-slate-500 mb-3 flex items-center gap-2">
+                <span className="text-base">⚗️</span> Drug Metabolism Pathway
+              </h4>
+              <MetabolismPathway
+                drug={result.drug}
+                gene={result.pharmacogenomic_profile.primary_gene}
+                phenotype={result.pharmacogenomic_profile.phenotype}
+                riskLabel={result.risk_assessment.risk_label}
+              />
+            </div>
+          )}
         </div>
 
         {/* Genotype Details */}

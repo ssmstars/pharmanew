@@ -19,6 +19,7 @@ interface AnalysisRequest {
   analysis_type?: 'single_drug' | 'polypharmacy';
   patient_id?: string;
   ai_provider?: 'openai' | 'gemini' | 'dual' | 'fallback';
+  schema_mode?: 'strict' | 'extended';
 }
 
 // Response schema (matches exact specification)
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { vcf_content, drug, drugs, analysis_type = 'single_drug', patient_id, ai_provider } = body;
+    const { vcf_content, drug, drugs, analysis_type = 'single_drug', patient_id, ai_provider, schema_mode = 'strict' } = body;
     const patientId = patient_id || `PATIENT_${Date.now()}`;
 
     if (analysis_type === 'polypharmacy') {
@@ -112,7 +113,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         vcf_content,
         drugs: drugs!,
         patient_id: patientId,
-        ai_provider
+        ai_provider,
+        schema_mode
       });
     }
 
@@ -202,17 +204,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     // Convert LLMExplanation to expected format if needed
-    let formattedExplanation;
+    let formattedExplanation: { summary: string; mechanism: string; variant_interpretation: string };
     if (explanation && ('clinical_risk_summary' in explanation || 'polypharmacy_clinical_summary' in explanation)) {
       // This is our enhanced LLMExplanation - convert to legacy format for API compatibility
       formattedExplanation = {
-        summary: explanation.clinical_recommendation || explanation.polypharmacy_triage || "Clinical risk assessment completed.",
-        mechanism: explanation.biological_mechanism?.enzyme_function || explanation.polypharmacy_mechanisms?.enzymatic_bottleneck || "Genetic variants affect drug metabolism.",
-        variant_interpretation: explanation.phenotype_impact || explanation.polypharmacy_impact || "Pharmacogenetic analysis based on detected variants."
+        summary: (explanation as any).clinical_recommendation || (explanation as any).polypharmacy_triage || "Clinical risk assessment completed.",
+        mechanism: (explanation as any).biological_mechanism?.enzyme_function || (explanation as any).polypharmacy_mechanisms?.enzymatic_bottleneck || "Genetic variants affect drug metabolism.",
+        variant_interpretation: (explanation as any).phenotype_impact || (explanation as any).polypharmacy_impact || "Pharmacogenetic analysis based on detected variants."
       };
     } else {
-      formattedExplanation = explanation;
+      // Already in correct format or simple object
+      formattedExplanation = {
+        summary: (explanation as any).summary || "Clinical risk assessment completed.",
+        mechanism: (explanation as any).mechanism || "Genetic variants affect drug metabolism.",
+        variant_interpretation: (explanation as any).variant_interpretation || "Pharmacogenetic analysis based on detected variants."
+      };
     }
+
+    const singleVariantCitation = buildVariantCitation(relevantVariants);
+    const enrichedExplanation = appendVariantCitation(formattedExplanation, singleVariantCitation);
 
     // Step 6: Build response
     const response: AnalysisResponse = {
@@ -232,7 +242,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         detected_variants: mapDetectedVariants(riskResult.pharmacogenomic_profile.detected_variants)
       },
       clinical_recommendation: riskResult.clinical_recommendation,
-      llm_generated_explanation: formattedExplanation as { summary: string; mechanism: string; variant_interpretation: string; },
+      llm_generated_explanation: enrichedExplanation as { summary: string; mechanism: string; variant_interpretation: string; },
       quality_metrics: {
         vcf_parsing_success: vcfResult.success,
         variants_detected: relevantVariants.length,
@@ -243,7 +253,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const processingTime = Date.now() - startTime;
     console.log(`Analysis completed in ${processingTime}ms`);
 
-    return NextResponse.json(response, { status: 200 });
+    const payload = schema_mode === 'extended' ? response : toStrictResponse(response);
+    return NextResponse.json(payload, { status: 200 });
 
   } catch (error) {
     console.error('Analysis API error:', error);
@@ -279,8 +290,9 @@ async function handlePolypharmacyAnalysis(params: {
   drugs: string[];
   patient_id: string;
   ai_provider?: string;
+  schema_mode?: 'strict' | 'extended';
 }): Promise<NextResponse> {
-  const { vcf_content, drugs, patient_id, ai_provider } = params;
+  const { vcf_content, drugs, patient_id, ai_provider, schema_mode = 'strict' } = params;
   
   console.log(`Starting polypharmacy analysis for patient ${patient_id}, drugs: ${drugs.join(', ')}`);
 
@@ -357,21 +369,30 @@ async function handlePolypharmacyAnalysis(params: {
     const providerStatus = LLMExplainGenerator.getProvidersStatus();
     
     // Convert polypharmacy LLM explanation to API format
-    let formattedExplanation;
+    let formattedExplanation: { summary: string; mechanism: string; variant_interpretation: string };
     if (llmResult.explanation && ('polypharmacy_clinical_summary' in llmResult.explanation)) {
       formattedExplanation = {
-        summary: llmResult.explanation.polypharmacy_triage || "Polypharmacy risk assessment completed.",
-        mechanism: llmResult.explanation.polypharmacy_mechanisms?.enzymatic_bottleneck || "Multi-drug metabolic interactions detected.",
-        variant_interpretation: llmResult.explanation.polypharmacy_impact || "Complex polypharmacy analysis based on genetic profile."
+        summary: (llmResult.explanation as any).polypharmacy_triage || "Polypharmacy risk assessment completed.",
+        mechanism: (llmResult.explanation as any).polypharmacy_mechanisms?.enzymatic_bottleneck || "Multi-drug metabolic interactions detected.",
+        variant_interpretation: (llmResult.explanation as any).polypharmacy_impact || "Complex polypharmacy analysis based on genetic profile."
+      };
+    } else if (llmResult.explanation) {
+      formattedExplanation = {
+        summary: (llmResult.explanation as any).summary || "Polypharmacy risk assessment completed.",
+        mechanism: (llmResult.explanation as any).mechanism || "Multi-drug interactions analyzed.",
+        variant_interpretation: (llmResult.explanation as any).variant_interpretation || "Pharmacogenetic analysis for multiple medications." 
       };
     } else {
-      formattedExplanation = llmResult.explanation || {
+      formattedExplanation = {
         summary: "Polypharmacy risk assessment completed.",
         mechanism: "Multi-drug interactions analyzed.",
         variant_interpretation: "Pharmacogenetic analysis for multiple medications." 
       };
     }
     
+    const polyVariantCitation = buildVariantCitation(vcfResult.variants);
+    const enrichedPolyExplanation = appendVariantCitation(formattedExplanation, polyVariantCitation);
+
     const response: AnalysisResponse = {
       patient_id,
       drugs,
@@ -410,7 +431,7 @@ async function handlePolypharmacyAnalysis(params: {
         implementation_status: 'Polypharmacy analysis - consult clinical guidelines'
       },
 
-      llm_generated_explanation: formattedExplanation as { summary: string; mechanism: string; variant_interpretation: string; },
+      llm_generated_explanation: enrichedPolyExplanation as { summary: string; mechanism: string; variant_interpretation: string; },
       quality_metrics: {
         vcf_parsing_success: vcfResult.success,
         variants_detected: vcfResult.variants.length,
@@ -419,7 +440,8 @@ async function handlePolypharmacyAnalysis(params: {
     };
 
     console.log(`Polypharmacy analysis completed for ${drugs.length} drugs`);
-    return NextResponse.json(response, { status: 200 });
+    const payload = schema_mode === 'extended' ? response : toStrictResponse(response);
+    return NextResponse.json(payload, { status: 200 });
 
   } catch (error) {
     console.error('Polypharmacy analysis error:', error);
@@ -526,7 +548,21 @@ function normalizeRequest(body: AnalysisRequest): AnalysisRequest {
   return {
     ...body,
     drug: normalizedDrug,
-    drugs: normalizedDrugs
+    drugs: normalizedDrugs,
+    schema_mode: body.schema_mode || 'strict'
+  };
+}
+
+function toStrictResponse(response: AnalysisResponse) {
+  return {
+    patient_id: response.patient_id,
+    drug: response.drug || response.drugs?.[0] || 'UNKNOWN',
+    timestamp: response.timestamp,
+    risk_assessment: response.risk_assessment,
+    pharmacogenomic_profile: response.pharmacogenomic_profile,
+    clinical_recommendation: response.clinical_recommendation,
+    llm_generated_explanation: response.llm_generated_explanation,
+    quality_metrics: response.quality_metrics
   };
 }
 
@@ -677,4 +713,26 @@ function mapDetectedVariants(variants: Array<{ rsID?: string; chromosome: string
     gene: variant.gene,
     starAllele: variant.starAllele
   }));
+}
+
+function buildVariantCitation(variants: Array<{ rsID?: string; id?: string }>): string {
+  const rsids = variants
+    .map(variant => variant.rsID || variant.id)
+    .filter((value): value is string => !!value && value.startsWith('rs'));
+
+  if (rsids.length === 0) return '';
+  return `Detected variants: ${Array.from(new Set(rsids)).join(', ')}.`;
+}
+
+function appendVariantCitation(
+  explanation: { summary: string; mechanism: string; variant_interpretation: string },
+  citation: string
+) {
+  if (!citation) return explanation;
+  if (explanation.variant_interpretation.includes('rs')) return explanation;
+
+  return {
+    ...explanation,
+    variant_interpretation: `${explanation.variant_interpretation} ${citation}`
+  };
 }
