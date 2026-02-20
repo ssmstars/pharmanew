@@ -16,7 +16,7 @@
 | Requirement | Link |
 |-------------|------|
 | **🌐 Live Application URL** | https://pharmanew-z518.vercel.app/ |
-| **🎥 LinkedIn Demo Video** | REPLACE_WITH_LINKEDIN_PUBLIC_POST |
+| **🎥 LinkedIn Demo Video** | https://www.linkedin.com/posts/harteij-v-k-raju-77233b29a_rift2026-pharmaguard-pharmacogenomics-ugcPost-7430425033824567296-PJUA?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEhPBYYBFXOaRgdkB8RHFU_RyLHyfj-zGic |
 | **📂 GitHub Repository** | https://github.com/ssmstars/pharmanew.git |
 
 > ⚠️ **LinkedIn Requirements**: The video must be PUBLIC, tag the official RIFT2026 page, and include hashtags: `#RIFT2026 #PharmaGuard #Pharmacogenomics #AIinHealthcare`
