@@ -1,5 +1,7 @@
 # 🧬 PharmaGuard - Pharmacogenomic Risk Prediction System
 
+**RIFT 2026 Hackathon | Pharmacogenomics / Explainable AI Track**
+
 [![Next.js](https://img.shields.io/badge/Next.js-14.0-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC)](https://tailwindcss.com/)
@@ -7,22 +9,30 @@
 
 > **Production-ready pharmacogenomic analysis platform with AI-powered explanations and CPIC-aligned recommendations**
 
-## 🎯 Overview
+---
 
-**PharmaGuard** is a cutting-edge web application that analyzes genetic variants from VCF files to predict pharmacogenomic risks for specific medications. Built for healthcare professionals, it provides:
+## ✅ Submission Links (REQUIRED)
 
-- **Precision Medicine**: CPIC-aligned drug-gene interaction analysis
-- **AI-Powered Explanations**: LLM-generated clinical interpretations
-- **Production Ready**: Scalable architecture with comprehensive error handling
-- **Medical Grade**: Clinical decision support with proper disclaimers
+| Requirement | Link |
+|-------------|------|
+| **🌐 Live Application URL** | https://pharmanew-z518.vercel.app/ |
+| **🎥 LinkedIn Demo Video** | REPLACE_WITH_LINKEDIN_PUBLIC_POST |
+| **📂 GitHub Repository** | https://github.com/ssmstars/pharmanew.git |
 
-## ✅ Submission Links (Required)
+> ⚠️ **LinkedIn Requirements**: The video must be PUBLIC, tag the official RIFT2026 page, and include hashtags: `#RIFT2026 #PharmaGuard #Pharmacogenomics #AIinHealthcare`
 
-- **Live Application URL:** REPLACE_WITH_PUBLIC_URL
-- **LinkedIn Demo Video:** REPLACE_WITH_LINKEDIN_PUBLIC_POST
-- **GitHub Repository:** REPLACE_WITH_GITHUB_REPO_URL
+---
 
-> Note: The LinkedIn post must be public and tag the official RIFT page with hashtags: #RIFT2026 #PharmaGuard #Pharmacogenomics #AIinHealthcare
+## 🎯 Problem Statement
+
+**Adverse drug reactions kill over 100,000 Americans annually.** Many of these deaths are preventable through pharmacogenomic testing — analyzing how genetic variants affect drug metabolism.
+
+PharmaGuard addresses this by building an AI-powered web application that:
+1. **Parses authentic VCF files** (Variant Call Format — industry standard for genomic data)
+2. **Identifies pharmacogenomic variants** across 6 critical genes
+3. **Predicts drug-specific risks**: Safe, Adjust Dosage, Toxic, Ineffective, Unknown
+4. **Generates clinical explanations** using LLMs with variant citations
+5. **Provides CPIC-aligned dosing recommendations**
 
 ## ✨ Features
 
@@ -58,8 +68,8 @@ npm 9.0.0 or later
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/pharmaguard.git
-   cd pharmaguard
+   git clone https://github.com/ssmstars/pharmanew.git
+   cd pharmanew
    ```
 
 2. **Install dependencies**
@@ -113,53 +123,147 @@ npm 9.0.0 or later
 
 ## 🏗 Architecture Overview
 
-- **Frontend**: Next.js App Router + React + Tailwind CSS
-- **Backend API**: `POST /api/analyze` for VCF parsing, genotype inference, and risk scoring
-- **LLM Layer**: OpenAI/Gemini with rule-based fallback for clinical explanations
-- **Data Pipeline**: VCF → variants → diplotype → phenotype → CPIC-aligned risk + recommendations
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           PharmaGuard Architecture                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────┐    ┌─────────────────┐    ┌─────────────────────────────┐  │
+│  │   Frontend  │    │    API Layer    │    │      Core Engine            │  │
+│  │   Next.js   │───▶│  POST /analyze  │───▶│                             │  │
+│  │   React     │    │                 │    │  ┌─────────────────────┐    │  │
+│  │   Tailwind  │    │  Request        │    │  │    VCF Parser       │    │  │
+│  └─────────────┘    │  Validation     │    │  │    (VCFParser.ts)   │    │  │
+│        │            └─────────────────┘    │  └──────────┬──────────┘    │  │
+│        │                                   │             │               │  │
+│        ▼                                   │             ▼               │  │
+│  ┌─────────────┐                           │  ┌─────────────────────┐    │  │
+│  │  File Upload│                           │  │  Star Allele Caller │    │  │
+│  │  Drug Select│                           │  │  (Diplotype Engine) │    │  │
+│  │  Results UI │                           │  └──────────┬──────────┘    │  │
+│  └─────────────┘                           │             │               │  │
+│                                            │             ▼               │  │
+│                                            │  ┌─────────────────────┐    │  │
+│                                            │  │    Risk Engine      │    │  │
+│                                            │  │  (CPIC Guidelines)  │    │  │
+│                                            │  └──────────┬──────────┘    │  │
+│                                            │             │               │  │
+│                                            └─────────────┼───────────────┘  │
+│                                                          │                  │
+│                              ┌────────────────────────────┘                 │
+│                              ▼                                              │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                        LLM Explanation Layer                          │  │
+│  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────────────────┐   │  │
+│  │   │   OpenAI    │    │   Gemini    │    │   Rule-Based Fallback   │   │  │
+│  │   │   GPT-4     │    │   Pro       │    │   (Always Available)    │   │  │
+│  │   └─────────────┘    └─────────────┘    └─────────────────────────┘   │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow Pipeline
+
+```
+VCF File → Parse Variants → Identify Gene Variants → Call Star Alleles 
+         → Determine Diplotype → Map to Phenotype → Assess Risk (CPIC)
+         → Generate LLM Explanation → Return JSON Response
+```
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS 3.4 |
+| **Backend** | Next.js API Routes, Node.js Runtime |
+| **AI/LLM** | OpenAI GPT-4, Google Gemini, Rule-based fallback |
+| **Data Processing** | Custom VCF Parser, Star Allele Calling Engine |
+| **Guidelines** | CPIC 2017/2022/2023 Clinical Guidelines |
+| **Deployment** | Vercel (Serverless) |
 
 ## 📖 API Documentation
 
 ### POST `/api/analyze`
 
-**Input**
+Analyzes VCF genetic data for pharmacogenomic risks.
+
+**Request Body**
 ```json
 {
-   "vcf_content": "<raw_vcf_string>",
-   "drug": "CODEINE",
-   "analysis_type": "single_drug",
-   "patient_id": "PATIENT_123"
+  "vcf_content": "<raw_vcf_string>",
+  "drug": "CODEINE",
+  "patient_id": "PATIENT_123"
 }
 ```
 
-**Output (Schema-Compliant)**
+**Response (Hackathon Schema-Compliant)**
 ```json
 {
-   "patient_id": "PATIENT_123",
-   "drug": "CODEINE",
-   "timestamp": "2026-02-20T12:00:00.000Z",
-   "risk_assessment": {
-      "risk_label": "Safe",
-      "confidence_score": 0.92,
-      "severity": "low"
-   },
-   "pharmacogenomic_profile": {
-      "primary_gene": "CYP2D6",
-      "diplotype": "*1/*1",
-      "phenotype": "NM",
-      "detected_variants": [
-         { "rsid": "rs3892097", "chromosome": "22", "position": 42524947, "ref": "C", "alt": "T" }
-      ]
-   },
-   "clinical_recommendation": { "dosing_guidance": "Use standard dosing." },
-   "llm_generated_explanation": {
-      "summary": "...",
-      "mechanism": "...",
-      "variant_interpretation": "..."
-   },
-   "quality_metrics": { "vcf_parsing_success": true, "variants_detected": 1, "llm_confidence": 0.9 }
+  "patient_id": "PATIENT_123",
+  "drug": "CODEINE",
+  "timestamp": "2026-02-20T12:00:00.000Z",
+  "risk_assessment": {
+    "risk_label": "Safe",
+    "confidence_score": 0.92,
+    "severity": "none"
+  },
+  "pharmacogenomic_profile": {
+    "primary_gene": "CYP2D6",
+    "diplotype": "*1/*1",
+    "phenotype": "NM",
+    "detected_variants": [
+      {
+        "rsid": "rs3892097",
+        "chromosome": "chr22",
+        "position": 42524947,
+        "ref": "C",
+        "alt": "T",
+        "gene": "CYP2D6",
+        "starAllele": "*4",
+        "genotype": "0/1",
+        "functionImpact": "No function"
+      }
+    ]
+  },
+  "clinical_recommendation": {
+    "dosing_guidance": "Use standard dosing per labeling.",
+    "monitoring_requirements": ["Standard monitoring"],
+    "alternative_drugs": [],
+    "cpic_level": "A",
+    "guideline_source": "CPIC Guideline for CYP2D6 and Codeine Therapy (2014)"
+  },
+  "llm_generated_explanation": {
+    "summary": "Patient has normal CYP2D6 metabolism. Standard codeine dosing is appropriate.",
+    "mechanism": "CYP2D6 converts codeine to morphine. Normal metabolizers produce therapeutic morphine levels.",
+    "variant_interpretation": "No loss-of-function variants detected. Diplotype *1/*1 indicates normal enzyme activity."
+  },
+  "quality_metrics": {
+    "vcf_parsing_success": true,
+    "variants_detected": 1,
+    "llm_confidence": 0.9
+  }
 }
 ```
+
+### Risk Label Values (Enum)
+| Value | Description |
+|-------|-------------|
+| `Safe` | Standard dosing appropriate |
+| `Adjust Dosage` | Dose modification recommended |
+| `Toxic` | High toxicity risk |
+| `Ineffective` | Reduced/no efficacy expected |
+| `Unknown` | Insufficient data for assessment |
+
+### Phenotype Values (Enum)
+| Value | Description |
+|-------|-------------|
+| `PM` | Poor Metabolizer |
+| `IM` | Intermediate Metabolizer |
+| `NM` | Normal Metabolizer |
+| `RM` | Rapid Metabolizer |
+| `URM` | Ultrarapid Metabolizer |
+| `Unknown` | Cannot be determined |
 
 ## 🚀 Deployment
 
@@ -182,30 +286,35 @@ npm 9.0.0 or later
 ## 📁 Project Structure
 
 ```
-pharmaguard/
+pharmanew/
 ├── src/
 │   ├── app/
 │   │   ├── api/analyze/
-│   │   │   └── route.ts          # Main analysis API endpoint
+│   │   │   └── route.ts          # Main analysis API (hackathon-compliant)
+│   │   ├── app/
+│   │   │   └── page.tsx          # Main application interface
 │   │   ├── globals.css           # Global styles
-│   │   ├── layout.tsx            # Root layout
-│   │   └── page.tsx              # Main application page
+│   │   └── layout.tsx            # Root layout
 │   ├── components/
-│   │   ├── DrugSelector.tsx      # Drug selection interface
-│   │   ├── FileUpload.tsx        # VCF file upload component
+│   │   ├── DrugSelector.tsx      # Drug selection dropdown
+│   │   ├── FileUpload.tsx        # VCF file upload (drag-drop)
 │   │   ├── Header.tsx            # Application header
-│   │   └── ResultsDisplay.tsx    # Results visualization
+│   │   ├── ResultsDisplay.tsx    # Risk results visualization
+│   │   └── charts/               # Data visualization components
 │   └── lib/
-│       ├── DrugGeneMap.ts        # Drug-gene mapping definitions
-│       ├── LLMExplain.ts         # AI explanation generator
-│       ├── RiskEngine.ts         # Risk assessment logic
-│       ├── types.ts              # TypeScript type definitions
-│       ├── utils.ts              # Utility functions
-│       ├── VCFParser.ts          # VCF file parsing logic
-│       └── VariantPhenotypeMap.ts # Genotype-phenotype mapping
+│       ├── DrugGeneMap.ts        # 6 drugs ↔ 6 genes mapping
+│       ├── LLMExplain.ts         # OpenAI/Gemini integration
+│       ├── RiskEngine.ts         # CPIC-aligned risk assessment
+│       ├── StarAlleleCalling.ts  # Diplotype calling engine
+│       ├── VCFParser.ts          # VCF v4.2 parser
+│       ├── VariantPhenotypeMap.ts# Genotype → Phenotype mapping
+│       └── types.ts              # TypeScript definitions
 ├── public/
 │   └── sample.vcf                # Sample VCF for testing
-├── .env.example                  # Environment variables template
+├── sample_data.vcf               # Additional test file
+├── sample_patient.vcf            # Patient test case
+├── .env.example                  # Environment template
+├── package.json                  # Dependencies
 └── README.md                     # This file
 ```
 
@@ -229,11 +338,33 @@ When OpenAI API is unavailable:
 
 ## 🧪 Testing
 
-### Manual Testing
+### Sample VCF Files Included
 
-1. **Sample VCF**: Use `public/sample.vcf`
-2. **Test Drugs**: Try each supported medication
-3. **Edge Cases**: Test invalid files, network errors
+| File | Description |
+|------|-------------|
+| `public/sample.vcf` | General pharmacogenomic test file |
+| `sample_data.vcf` | Comprehensive variant data |
+| `sample_patient.vcf` | Patient-specific test case |
+
+### Manual Testing Steps
+
+1. **Open Application**: Navigate to https://pharmanew-z518.vercel.app/
+2. **Upload VCF**: Use drag-and-drop or file picker with `public/sample.vcf`
+3. **Select Drug**: Choose from dropdown (e.g., "CODEINE", "WARFARIN")
+4. **Analyze**: Click "Analyze Risk" button
+5. **Review Results**: Examine risk label, clinical recommendations, LLM explanation
+6. **Export**: Download JSON or copy to clipboard
+
+### Test Cases
+
+| Drug | Expected Gene | Test Scenario |
+|------|---------------|---------------|
+| CODEINE | CYP2D6 | Normal metabolizer → Safe |
+| WARFARIN | CYP2C9 | Missing VKORC1 → Unknown |
+| CLOPIDOGREL | CYP2C19 | Poor metabolizer → Ineffective |
+| SIMVASTATIN | SLCO1B1 | Decreased function → Adjust Dosage |
+| AZATHIOPRINE | TPMT | Poor metabolizer → Toxic |
+| FLUOROURACIL | DPYD | Normal → Safe |
 
 ## 📄 License
 
@@ -247,10 +378,13 @@ This project is licensed under the MIT License.
 
 ## 👥 Team Members
 
-- REPLACE_WITH_TEAM_MEMBER_NAMES
+| Member | Role | Contributions |
+|--------|------|---------------|
+| **Shufwath Raqeeb S** | Backend & Genomic Data Processing | VCF Parser, Star Allele Calling Engine |
+| **Suhas D** | Full Stack Development & AI Integration | Next.js Architecture, OpenAI/Gemini Integration |
+| **Shiva Ganesh S R** | Risk Engine & CPIC Logic Implementation | CPIC Guidelines, Risk Assessment Logic |
+| **Harteij V K Raju** | UI/UX & Deployment Engineering | React Components, Vercel Deployment |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Built for RIFT 2026 Hackathon — Precision Medicine & Improved Patient Outcomes**
